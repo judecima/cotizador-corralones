@@ -57,25 +57,26 @@ test('optimizador básico agrupa cortes de perfiles de 6 m', () => {
   assert.equal(packed.bars, 2);
 });
 
-test('steel frame calcula PGC, PGU y placas comerciales', () => {
+test('steel frame cuenta montantes por panel y optimiza barras comerciales', () => {
   const result = calculateSteelFrame({
     length: 8,
     height: 2.6,
-    openingsArea: 1.8,
-    openingCount: 1,
-    openingWidthTotal: 1.5,
+    openingsArea: 0,
+    openingCount: 0,
+    openingWidthTotal: 0,
     studSpacing: 0.4,
     panelPreferred: 3,
     profileLength: 6,
-    wastePercent: 0,
+    wastePercent: 7,
     includeOsb: true,
     includeDrywall: true,
     includeInsulation: true
   });
 
   assert.equal(result.metrics[1][1], 3);
-  assert.ok(result.items.find(x => x.id === 'steelStud90').qty > 0);
-  assert.ok(result.items.find(x => x.id === 'steelTrack90').qty > 0);
-  assert.ok(result.items.find(x => x.id === 'osbBoard').qty > 0);
-  assert.ok(result.items.find(x => x.id === 'drywallBoard').qty > 0);
+  assert.equal(result.metrics[2][1], 24);
+  assert.equal(result.items.find(x => x.id === 'steelStud90').qty, 12);
+  assert.equal(result.items.find(x => x.id === 'steelTrack90').qty, 3);
+  assert.equal(result.items.find(x => x.id === 'osbBoard').qty, 8);
+  assert.equal(result.items.find(x => x.id === 'drywallBoard').qty, 8);
 });
