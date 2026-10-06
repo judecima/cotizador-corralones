@@ -2,7 +2,7 @@ export const MATERIALS = {
   brickCeramic8: { label: 'Ladrillo cerámico hueco 8 cm', unit: 'u' },
   brickCeramic12: { label: 'Ladrillo cerámico hueco 12 cm', unit: 'u' },
   brickCeramic18: { label: 'Ladrillo cerámico hueco 18 cm', unit: 'u' },
-  cement50: { label: 'Cemento 50 kg', unit: 'bolsa' },
+  cement25: { label: 'Cemento 25 kg', unit: 'bolsa' },
   lime25: { label: 'Cal hidratada 25 kg', unit: 'bolsa' },
   sand: { label: 'Arena', unit: 'm³' },
   plasterMortar: { label: 'Mortero para revoque', unit: 'm³' },
@@ -26,5 +26,12 @@ export const MATERIALS = {
   waterproof: { label: 'Impermeabilizante cementicio 20 kg', unit: 'bolsa' },
   poolFinish: { label: 'Revestimiento interior de pileta', unit: 'm²' },
   tileAdhesive: { label: 'Adhesivo para revestimiento 25 kg', unit: 'bolsa' },
-  grout: { label: 'Pastina 5 kg', unit: 'bolsa' }
+  grout: { label: 'Pastina 5 kg', unit: 'bolsa' },
+  steelStud90: { label: 'PGC 90 mm × 0,9 mm × 6 m', unit: 'barra' },
+  steelTrack90: { label: 'PGU 90 mm × 0,9 mm × 6 m', unit: 'barra' },
+  osbBoard: { label: 'OSB 11,1 mm 1,22 × 2,44 m', unit: 'placa' },
+  weatherBarrier: { label: 'Membrana hidrófuga 1,50 × 50 m', unit: 'rollo' },
+  steelFrameScrew: { label: 'Tornillo autoperforante estructura', unit: 'u' },
+  osbScrew: { label: 'Tornillo para OSB', unit: 'u' },
+  anchor: { label: 'Anclaje para solera', unit: 'u' }
 };
