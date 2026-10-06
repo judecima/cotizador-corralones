@@ -21,7 +21,7 @@ export function calculateWetWall(input) {
   const mortar = area * mortarM3PerM2 * f;
   const items = [
     item(block, ceil(area * unitsPerM2 * f)),
-    item('cement50', ceil(mortar * 190 / 50)),
+    item('cement25', ceil(mortar * 190 / 25)),
     item('lime25', ceil(mortar * 105 / 25)),
     item('sand', mortar * 1.05)
   ];
@@ -147,7 +147,7 @@ export function calculateCounterfloor(input) {
     title: 'Contrapiso / platea liviana',
     metrics: [['Superficie', area, 'm²'], ['Volumen de mezcla', volume, 'm³']],
     items: [
-      item('cement50', ceil(volume * 300 / 50)),
+      item('cement25', ceil(volume * 300 / 25)),
       item('sand', volume * 0.55),
       item('stone', volume * 0.80)
     ],
@@ -183,7 +183,7 @@ export function calculatePool(input) {
     items: [
       item('concrete', slabVolume),
       item('poolBlock', ceil(wallArea * 12.5 * f)),
-      item('cement50', ceil(mortar * 190 / 50)),
+      item('cement25', ceil(mortar * 190 / 25)),
       item('lime25', ceil(mortar * 105 / 25)),
       item('sand', mortar * 1.05),
       item('waterproof', ceil(interiorArea * 3 / 20)),
@@ -198,9 +198,149 @@ export function calculatePool(input) {
   };
 }
 
+
+export function panelizeSteelFrame(length, preferred = 3, min = 2, max = 4) {
+  let remaining = clamp(length);
+  const panels = [];
+  if (remaining <= 0) return panels;
+  if (remaining <= max) return [remaining];
+
+  while (remaining > max) {
+    let take = preferred;
+
+    if (remaining <= max * 2 && remaining - preferred < min) {
+      take = remaining / 2;
+    } else if (remaining - take < min) {
+      take = Math.min(max, remaining - min);
+    }
+
+    if (take < min || take > max) {
+      const count = Math.max(2, Math.ceil(remaining / max));
+      const width = remaining / count;
+      for (let i = 0; i < count; i += 1) panels.push(width);
+      remaining = 0;
+      break;
+    }
+
+    panels.push(take);
+    remaining -= take;
+  }
+
+  if (remaining > 1e-9) panels.push(remaining);
+  return panels.map(value => Math.round(value * 1000) / 1000);
+}
+
+export function packStockBars(pieceLengths, stockLength = 6) {
+  const stock = Math.max(0.1, clamp(stockLength));
+  const pieces = pieceLengths
+    .map(clamp)
+    .filter(value => value > 0)
+    .sort((a, b) => b - a);
+
+  const bins = [];
+  for (const piece of pieces) {
+    if (piece > stock + 1e-9) {
+      const full = Math.floor(piece / stock);
+      for (let i = 0; i < full; i += 1) bins.push(0);
+      const rem = piece - full * stock;
+      if (rem > 1e-9) bins.push(stock - rem);
+      continue;
+    }
+
+    let bestIndex = -1;
+    let bestRemainder = Infinity;
+    for (let i = 0; i < bins.length; i += 1) {
+      if (bins[i] + 1e-9 >= piece && bins[i] - piece < bestRemainder) {
+        bestIndex = i;
+        bestRemainder = bins[i] - piece;
+      }
+    }
+
+    if (bestIndex === -1) bins.push(stock - piece);
+    else bins[bestIndex] -= piece;
+  }
+
+  return {
+    bars: bins.length,
+    unused: bins.reduce((sum, value) => sum + value, 0),
+    used: pieces.reduce((sum, value) => sum + value, 0)
+  };
+}
+
+export function calculateSteelFrame(input) {
+  const length = clamp(input.length);
+  const height = clamp(input.height || 2.6);
+  const area = netWallArea(input);
+  const spacing = Math.max(0.3, clamp(input.studSpacing || 0.4));
+  const openingCount = Math.round(clamp(input.openingCount || 0));
+  const openingWidthTotal = Math.min(length, clamp(input.openingWidthTotal || 0));
+  const preferredPanel = Math.min(4, Math.max(2, clamp(input.panelPreferred || 3)));
+  const stockLength = Math.max(3, clamp(input.profileLength || 6));
+  const f = factor(input.wastePercent ?? 7);
+
+  const panels = panelizeSteelFrame(length, preferredPanel, 2, 4);
+  const baseStuds = ceil(length / spacing) + 1;
+  const jambReinforcement = openingCount * 2;
+  const totalFullHeightStuds = baseStuds + jambReinforcement;
+
+  const pgcPieces = Array.from({ length: totalFullHeightStuds }, () => height);
+  if (openingCount > 0 && openingWidthTotal > 0) {
+    const averageOpeningWidth = openingWidthTotal / openingCount;
+    for (let i = 0; i < openingCount; i += 1) {
+      pgcPieces.push(averageOpeningWidth, averageOpeningWidth);
+    }
+  }
+
+  const pguPieces = panels.flatMap(width => [width, width]);
+  const pgcPacking = packStockBars(pgcPieces, stockLength);
+  const pguPacking = packStockBars(pguPieces, stockLength);
+  const pgcBars = ceil(pgcPacking.bars * f);
+  const pguBars = ceil(pguPacking.bars * f);
+
+  const items = [
+    item('steelStud90', pgcBars),
+    item('steelTrack90', pguBars),
+    item('steelFrameScrew', ceil((totalFullHeightStuds * 4 + openingCount * 8) * f)),
+    item('anchor', ceil((length / 0.6 + 1) * f))
+  ];
+
+  if (input.includeOsb !== false) {
+    items.push(item('osbBoard', ceil(area * f / (1.22 * 2.44))));
+    items.push(item('weatherBarrier', ceil(area * f / 75)));
+    items.push(item('osbScrew', ceil(area * 18 * f)));
+  }
+  if (input.includeDrywall !== false) {
+    items.push(item('drywallBoard', ceil(area * f / 2.88)));
+    items.push(item('drywallScrew', ceil(area * 18 * f)));
+    items.push(item('jointTape', ceil((area * 1.15) / 90)));
+    items.push(item('jointCompound', ceil((area * 0.45) / 18)));
+  }
+  if (input.includeInsulation !== false) {
+    items.push(item('insulationRoll', ceil(area * f / 12)));
+  }
+
+  return {
+    title: 'Pared Steel Frame',
+    metrics: [
+      ['Superficie neta de muro', area, 'm²'],
+      ['Paneles propuestos', panels.length, 'u'],
+      ['Barras PGC optimizadas', pgcBars, 'u'],
+      ['Barras PGU optimizadas', pguBars, 'u']
+    ],
+    items,
+    assumptions: [
+      `Panelización comercial: ${panels.map(value => `${value.toFixed(2)} m`).join(' + ')}. Preferencia 3 m, mínimo 2 m y máximo 4 m cuando la geometría lo permite.`,
+      `Perfiles comerciales de ${stockLength.toFixed(2)} m agrupados con un empaquetado de cortes tipo best-fit. No contempla kerf ni restricciones de taller específicas.`,
+      'Las aberturas suman refuerzo de jambas y travesaños de estimación. Dinteles estructurales, cargas, anclajes, rigidización y encuentros L/T deben dimensionarse según proyecto y normativa.',
+      'Configuración base: PGC/PGU 90 mm, OSB exterior, placa de yeso interior, membrana hidrófuga y aislación.'
+    ]
+  };
+}
+
 export const CALCULATORS = {
   wetWall: calculateWetWall,
   drywall: calculateDrywall,
+  steelFrame: calculateSteelFrame,
   ceiling: calculateCeiling,
   fence: calculateFence,
   counterfloor: calculateCounterfloor,
