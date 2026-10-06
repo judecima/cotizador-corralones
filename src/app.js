@@ -135,7 +135,8 @@ function renderForm(values = {}) {
 function formValues() {
   const data = {};
   for (const field of calculatorDefs[currentType].fields) {
-    const el = els.form.elements[field.name];
+    const el = els.form.elements.namedItem(field.name);
+    if (!el) throw new Error(`No se encontró el campo "${field.name}" en el formulario.`);
     if (field.type === 'checkbox') data[field.name] = el.checked;
     else if (field.type === 'select') data[field.name] = isNaN(Number(el.value)) ? el.value : Number(el.value);
     else data[field.name] = Number(el.value);
