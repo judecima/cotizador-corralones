@@ -279,7 +279,11 @@ export function calculateSteelFrame(input) {
   const f = factor(input.wastePercent ?? 7);
 
   const panels = panelizeSteelFrame(length, preferredPanel, 2, 4);
-  const baseStuds = ceil(length / spacing) + 1;
+
+  // Cada panel se fabrica como unidad independiente, por lo que conserva
+  // montantes de borde propios. La separación indicada es un máximo.
+  const panelStudCounts = panels.map(width => ceil(width / spacing) + 1);
+  const baseStuds = panelStudCounts.reduce((sum, count) => sum + count, 0);
   const jambReinforcement = openingCount * 2;
   const totalFullHeightStuds = baseStuds + jambReinforcement;
 
@@ -294,8 +298,12 @@ export function calculateSteelFrame(input) {
   const pguPieces = panels.flatMap(width => [width, width]);
   const pgcPacking = packStockBars(pgcPieces, stockLength);
   const pguPacking = packStockBars(pguPieces, stockLength);
-  const pgcBars = ceil(pgcPacking.bars * f);
-  const pguBars = ceil(pguPacking.bars * f);
+
+  // El packing ya incorpora el desperdicio geométrico de los cortes.
+  // La reserva porcentual sólo agrega una barra si la longitud total
+  // reservada supera la capacidad de las barras ya necesarias.
+  const pgcBars = Math.max(pgcPacking.bars, ceil((pgcPacking.used * f) / stockLength));
+  const pguBars = Math.max(pguPacking.bars, ceil((pguPacking.used * f) / stockLength));
 
   const items = [
     item('steelStud90', pgcBars),
@@ -324,6 +332,7 @@ export function calculateSteelFrame(input) {
     metrics: [
       ['Superficie neta de muro', area, 'm²'],
       ['Paneles propuestos', panels.length, 'u'],
+      ['Montantes de panel', totalFullHeightStuds, 'u'],
       ['Barras PGC optimizadas', pgcBars, 'u'],
       ['Barras PGU optimizadas', pguBars, 'u']
     ],
