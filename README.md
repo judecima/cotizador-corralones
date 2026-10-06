@@ -10,6 +10,9 @@ MVP web para estimar materiales y costos de obras habituales de corralón.
 - Cerco: tejido, postes, tensores, alambre y hormigón de bases.
 - Contrapiso: cemento, arena y piedra partida.
 - Pileta de mampostería: excavación de referencia, base, bloques, impermeabilización y revestimiento.
+- Steel Frame: panelización de paredes, PGC/PGU, OSB, yeso, aislación, membrana y optimización básica de perfiles de 6 m.
+
+Los cálculos con cemento usan **bolsas comerciales de 25 kg**.
 
 Además permite:
 
@@ -56,7 +59,7 @@ npm run check
 
 Esta versión es un **estimador comercial**, no un software de cálculo estructural. Las dosificaciones, modulaciones y rendimientos son supuestos iniciales que deben parametrizarse con los sistemas constructivos y productos reales del corralón antes de uso productivo.
 
-En particular, la pileta no dimensiona estructura, hierro, hidráulica, bomba, filtro ni requerimientos de suelo.
+En particular, la pileta no dimensiona estructura, hierro, hidráulica, bomba, filtro ni requerimientos de suelo. El módulo Steel Frame es un cómputo comercial: no sustituye cálculo estructural ni dimensionamiento de dinteles, anclajes, rigidización o cargas.
 
 ## Próximos hitos sugeridos
 
@@ -65,4 +68,4 @@ En particular, la pileta no dimensiona estructura, hierro, hidráulica, bomba, f
 3. Presupuesto persistente en backend y generación de PDF.
 4. Múltiples ambientes/tramos dentro de un mismo proyecto.
 5. Importación o medición desde plano PDF.
-6. Integración de steel frame y optimización de perfiles/placas.
+6. Evolucionar Steel Frame a aberturas detalladas, encuentros L/T, rigidización, techos y entrepisos.
