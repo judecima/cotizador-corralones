@@ -233,7 +233,7 @@ export function panelizeSteelFrame(length, preferred = 3, min = 2, max = 4) {
 export function packStockBars(pieceLengths, stockLength = 6) {
   const stock = Math.max(0.1, clamp(stockLength));
   const pieces = pieceLengths
-    .map(clamp)
+    .map(value => clamp(value))
     .filter(value => value > 0)
     .sort((a, b) => b - a);
 
