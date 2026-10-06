@@ -27,6 +27,24 @@ const calculatorDefs = {
       checkbox('includeInsulation', 'Incluir aislación interior', true)
     ]
   },
+  steelFrame: {
+    label: 'Steel Frame',
+    hint: 'PGC/PGU + placas',
+    fields: [
+      num('length', 'Largo de pared', 8, 'm'),
+      num('height', 'Alto de pared', 2.6, 'm'),
+      num('openingsArea', 'Aberturas totales', 0, 'm²'),
+      num('openingCount', 'Cantidad de aberturas', 0, 'u'),
+      num('openingWidthTotal', 'Ancho total de aberturas', 0, 'm'),
+      select('studSpacing', 'Separación de montantes', 0.4, [[0.4, '40 cm'], [0.48, '48 cm'], [0.6, '60 cm']]),
+      select('panelPreferred', 'Ancho de panel preferido', 3, [[2, '2,00 m'], [2.5, '2,50 m'], [3, '3,00 m'], [3.5, '3,50 m'], [4, '4,00 m']]),
+      num('profileLength', 'Largo comercial de perfiles', 6, 'm'),
+      num('wastePercent', 'Reserva / desperdicio', 7, '%'),
+      checkbox('includeOsb', 'Incluir OSB exterior + membrana', true),
+      checkbox('includeDrywall', 'Incluir placa de yeso interior', true),
+      checkbox('includeInsulation', 'Incluir aislación interior', true)
+    ]
+  },
   ceiling: {
     label: 'Cielorraso',
     hint: 'Placas + perfilería',
